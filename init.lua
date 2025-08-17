@@ -82,8 +82,8 @@ require('lazy').setup({
     },
     opts = {
       debug = false,
-      -- model = 'gpt-4o',
-      model = 'claude-sonnet-4',
+      model = 'gpt-5',
+      -- model = 'claude-sonnet-4',
     },
     keys = {
       { '<leader>cc', '<cmd>CopilotChatToggle<cr>', desc = 'Toggle Copilot Chat' },
@@ -440,7 +440,8 @@ require('lazy').setup({
       }
 
       -- Go-specific keymaps
-      vim.keymap.set('n', '<leader>gt', '<cmd>GoTest<CR>', { desc = 'Go Test' })
+      -- vim.keymap.set('n', '<leader>gt', '<cmd>GoTest<CR>', { desc = 'Go Test' })
+      vim.keymap.set('n', '<leader>gt', '<cmd>UnifiedTest<CR>', { desc = 'Unified Test' })
       vim.keymap.set('n', '<leader>gi', '<cmd>GoImport<CR>', { desc = 'Go Import' })
       vim.keymap.set('n', '<leader>ga', '<cmd>GoAlt<CR>', { desc = 'Go to alternate file' })
     end,
@@ -470,6 +471,51 @@ require('lazy').setup({
           gs.blame_line { full = true }
         end, 'Git blame line')
         map('n', '<leader>gd', gs.diffthis, 'Git diff')
+      end,
+    },
+
+    -- Unified test/run/build interface
+    {
+      'axkirillov/unified.nvim',
+      config = function()
+        require('unified').setup {
+          -- Go configuration
+          go = {
+            test = {
+              command = 'go test',
+              args = { '-v' },
+              file_pattern = '_test.go',
+            },
+            run = {
+              command = 'go run',
+              args = { '.' },
+            },
+            build = {
+              command = 'go build',
+              args = { '.' },
+            },
+          },
+          rust = {
+            test = {
+              command = 'cargo test',
+              args = { '--' },
+            },
+            run = {
+              command = 'cargo run',
+              args = {},
+            },
+            build = {
+              command = 'cargo build',
+              args = {},
+            },
+          },
+        }
+
+        -- Add keymaps for unified commands
+        vim.keymap.set('n', '<leader>ut', '<cmd>UnifiedTest<CR>', { desc = 'Unified Test' })
+        vim.keymap.set('n', '<leader>ur', '<cmd>UnifiedRun<CR>', { desc = 'Unified Run' })
+        vim.keymap.set('n', '<leader>ub', '<cmd>UnifiedBuild<CR>', { desc = 'Unified Build' })
+        vim.keymap.set('n', '<leader>uc', '<cmd>UnifiedClean<CR>', { desc = 'Unified Clean' })
       end,
     },
   },
