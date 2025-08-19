@@ -242,6 +242,16 @@ require('lazy').setup({
             },
           },
         },
+        clangd = {
+          cmd = {
+            'clangd',
+            '--background-index',
+            '--clang-tidy',
+            '--header-insertion=iwyu',
+            '--completion-style=detailed',
+            '--offset-encoding=utf-16',
+          },
+        },
       }
 
       -- Tools to install
@@ -253,6 +263,9 @@ require('lazy').setup({
         'delve', -- Go debugger
         'yaml-language-server',
         'rust-analyzer', -- Rust language server
+        'clangd', --C/C++ language server
+        'clang-format',
+        'codelldb',
       }
 
       require('mason-tool-installer').setup { ensure_installed = tools }
@@ -371,7 +384,7 @@ require('lazy').setup({
     build = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'go', 'gomod', 'gosum', 'gowork', 'yaml', 'lua', 'vim', 'vimdoc', 'query', 'rust' },
+        ensure_installed = { 'go', 'gomod', 'gosum', 'gowork', 'yaml', 'lua', 'vim', 'vimdoc', 'query', 'rust', 'c', 'cpp', 'cmake' },
         auto_install = true,
         highlight = {
           enable = true,
@@ -403,6 +416,8 @@ require('lazy').setup({
         go = { 'gofumpt', 'goimports' },
         yaml = { 'yamlfmt' },
         lua = { 'stylua' },
+        c = { 'clang-format' },
+        cpp = { 'clang-format' },
       },
       format_on_save = {
         timeout_ms = 500,
@@ -461,11 +476,9 @@ require('lazy').setup({
       },
       on_attach = function(bufnr)
         local gs = package.loaded.gitsigns
-
         local function map(mode, key, action, desc)
           vim.keymap.set(mode, key, action, { buffer = bufnr, desc = desc })
         end
-
         map('n', '<leader>gh', gs.preview_hunk, 'Preview Git hunk')
         map('n', '<leader>gb', function()
           gs.blame_line { full = true }
@@ -506,6 +519,24 @@ require('lazy').setup({
             },
             build = {
               command = 'cargo build',
+              args = {},
+            },
+          },
+          -- C++ configuration (adjust target/executable names as needed)
+          cpp = {
+            -- Uses CTest via a CMake build directory named 'build'
+            test = {
+              command = 'ctest',
+              args = { '--test-dir', 'build', '--output-on-failure' },
+              file_pattern = { 'test_*.cpp', '*_test.cpp' },
+            },
+            build = {
+              command = 'cmake',
+              args = { '--build', 'build', '--parallel' },
+            },
+            run = {
+              -- Replace 'app' with your executable target name
+              command = './build/app',
               args = {},
             },
           },
