@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-global
--- Streamlined Neovim Config for Go Development
+-- Streamlined Neovim Config for Go, Rust, C++ and Python Development
 
 -- Set <space> as the leader key
 vim.g.mapleader = ' '
@@ -82,8 +82,8 @@ require('lazy').setup({
     },
     opts = {
       debug = false,
-      model = 'gpt-5',
-      -- model = 'claude-sonnet-4',
+      -- model = 'gpt-5',
+      model = 'claude-sonnet-4',
     },
     keys = {
       { '<leader>cc', '<cmd>CopilotChatToggle<cr>', desc = 'Toggle Copilot Chat' },
@@ -112,7 +112,9 @@ require('lazy').setup({
           width = 30,
         },
         filesystem = {
-          follow_current_file = true,
+          follow_current_file = {
+            enabled = true,
+          },
           filtered_items = {
             visible = false,
             hide_dotfiles = false,
@@ -252,6 +254,18 @@ require('lazy').setup({
             '--offset-encoding=utf-16',
           },
         },
+        pyright = {
+          settings = {
+            python = {
+              analysis = {
+                typeCheckingMode = 'basic',
+                autoSearchPaths = true,
+                useLibraryCodeForTypes = true,
+                diagnosticMode = 'workspace',
+              },
+            },
+          },
+        },
       }
 
       -- Tools to install
@@ -266,6 +280,10 @@ require('lazy').setup({
         'clangd', --C/C++ language server
         'clang-format',
         'codelldb',
+        'pyright', -- Python language server
+        'black', --Python formatter
+        'isort', -- Python import organizer
+        'flake8', -- Python linter
       }
 
       require('mason-tool-installer').setup { ensure_installed = tools }
@@ -290,7 +308,7 @@ require('lazy').setup({
 
           -- Toggle inlay hints if supported
           local client = vim.lsp.get_client_by_id(event.data.client_id)
-          if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+          if client and client.server_capabilities.inlayHintProvider then
             map('<leader>th', function()
               vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
             end, 'Toggle Inlay Hints')
@@ -309,12 +327,14 @@ require('lazy').setup({
       local lspconfig = require 'lspconfig'
       require('mason-lspconfig').setup {
         ensure_installed = vim.tbl_keys(servers),
+        automatic_installation = true,
         handlers = {
           function(server_name)
             lspconfig[server_name].setup {
               capabilities = capabilities,
               settings = servers[server_name] and servers[server_name].settings,
               filetypes = servers[server_name] and servers[server_name].filetypes,
+              cmd = servers[server_name] and servers[server_name].cmd,
             }
           end,
         },
@@ -384,8 +404,11 @@ require('lazy').setup({
     build = ':TSUpdate',
     config = function()
       require('nvim-treesitter.configs').setup {
-        ensure_installed = { 'go', 'gomod', 'gosum', 'gowork', 'yaml', 'lua', 'vim', 'vimdoc', 'query', 'rust', 'c', 'cpp', 'cmake' },
+        ensure_installed = { 'go', 'gomod', 'gosum', 'gowork', 'yaml', 'lua', 'vim', 'vimdoc', 'query', 'rust', 'c', 'cpp', 'cmake', 'python' },
+        sync_install = false,
         auto_install = true,
+        ignore_install = {},
+        modules = {},
         highlight = {
           enable = true,
         },
@@ -418,6 +441,7 @@ require('lazy').setup({
         lua = { 'stylua' },
         c = { 'clang-format' },
         cpp = { 'clang-format' },
+        python = { 'black', 'isort' },
       },
       format_on_save = {
         timeout_ms = 500,
@@ -486,7 +510,8 @@ require('lazy').setup({
         map('n', '<leader>gd', gs.diffthis, 'Git diff')
       end,
     },
-
+  },
+  {
     -- Unified test/run/build interface
     {
       'axkirillov/unified.nvim',
@@ -538,6 +563,21 @@ require('lazy').setup({
               -- Replace 'app' with your executable target name
               command = './build/app',
               args = {},
+            },
+          },
+          python = {
+            test = {
+              command = 'python',
+              args = { '-m', 'pytest', '0v' },
+              file_pattern = { 'test_*.py', '*_test.py' },
+            },
+            run = {
+              command = 'python',
+              args = { 'main.py' },
+            },
+            build = {
+              command = 'python',
+              args = { '-m', 'pip', 'install', '-e', '.' },
             },
           },
         }
