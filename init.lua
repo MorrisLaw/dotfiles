@@ -533,6 +533,7 @@ require('lazy').setup({
               args = { '.' },
             },
           },
+          -- Rust configuration
           rust = {
             test = {
               command = 'cargo test',
@@ -565,6 +566,7 @@ require('lazy').setup({
               args = {},
             },
           },
+          -- Python configuration
           python = {
             test = {
               command = 'python',
