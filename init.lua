@@ -29,6 +29,12 @@ vim.opt.inccommand = 'split'
 vim.opt.cursorline = true
 vim.opt.scrolloff = 10
 
+-- Folding settings
+vim.opt.foldmethod = 'expr'
+vim.opt.foldexpr = 'nvim_treesitter#foldexpr()'
+vim.opt.foldenable = false -- Start with folds open
+vim.opt.foldlevelstart = 99 -- Start with all folds open
+
 -- Basic Keymaps
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
@@ -477,6 +483,15 @@ require('lazy').setup({
         lsp_document_formatting = false, -- use conform.nvim instead
         lsp_keymaps = false, -- we defined our own above
       }
+
+      -- Go specific folding autocmd
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = 'go',
+        callback = function()
+          vim.opt_local.foldmethod = 'expr'
+          vim.opt_local.foldexpr = 'nvim_treesitter#foldexpr()'
+        end,
+      })
 
       -- Go-specific keymaps
       -- vim.keymap.set('n', '<leader>gt', '<cmd>GoTest<CR>', { desc = 'Go Test' })
